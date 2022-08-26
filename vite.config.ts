@@ -1,22 +1,28 @@
-import { rmSync } from 'fs'
-import path from 'path'
-import { defineConfig } from 'vite'
-import react from '@vitejs/plugin-react'
-import electron, { onstart } from 'vite-plugin-electron'
-import pkg from './package.json'
+import { rmSync } from 'fs';
+import path from 'path';
+import { defineConfig } from 'vite';
+import react from '@vitejs/plugin-react';
+import electron, { onstart } from 'vite-plugin-electron';
+import Unocss from 'unocss/vite';
+import pkg from './package.json';
 
-rmSync(path.join(__dirname, 'dist'), { recursive: true, force: true }) // v14.14.0
+rmSync(path.join(__dirname, 'dist'), { recursive: true, force: true }); // v14.14.0
 
 // https://vitejs.dev/config/
 export default defineConfig({
   resolve: {
     alias: {
       '@': path.join(__dirname, 'src'),
-      'styles': path.join(__dirname, 'src/assets/styles'),
+      styles: path.join(__dirname, 'src/assets/styles'),
     },
   },
   plugins: [
     react(),
+    Unocss({
+      shortcuts: [
+        { 'input-file': 'opacity-0 absolute left-0 top-0 cursor-pointer w-102px h-32px z-1' },
+      ],
+    }),
     electron({
       main: {
         entry: 'electron/main/index.ts',
@@ -40,7 +46,7 @@ export default defineConfig({
             // For Debug
             sourcemap: 'inline',
             outDir: 'dist/electron/preload',
-          }
+          },
         },
       },
       // Enables use of Node.js API in the Electron-Renderer
@@ -48,8 +54,21 @@ export default defineConfig({
       renderer: {},
     }),
   ],
-  server: process.env.VSCODE_DEBUG ? {
-    host: pkg.debug.env.VITE_DEV_SERVER_HOST,
-    port: pkg.debug.env.VITE_DEV_SERVER_PORT,
-  } : undefined,
-})
+  css: {
+    preprocessorOptions: {
+      less: {
+        // modifyVars: {
+        // 	"primary-color": "#1DA57A",
+        // },
+        javascriptEnabled: true,
+        additionalData: `@import "@/styles/var.less";`,
+      },
+    },
+  },
+  server: process.env.VSCODE_DEBUG
+    ? {
+        host: pkg.debug.env.VITE_DEV_SERVER_HOST,
+        port: pkg.debug.env.VITE_DEV_SERVER_PORT,
+      }
+    : undefined,
+});
