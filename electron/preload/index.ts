@@ -1,4 +1,4 @@
-function domReady(condition: DocumentReadyState[] = ['complete', 'interactive']) {
+export function domReady(condition: DocumentReadyState[] = ['complete', 'interactive']) {
   return new Promise(resolve => {
     if (condition.includes(document.readyState)) {
       resolve(true)
@@ -31,7 +31,7 @@ const safeDOM = {
  * https://projects.lukehaas.me/css-loaders
  * https://matejkustec.github.io/SpinThatShit
  */
-function useLoading() {
+export function useLoading() {
   const className = `loaders-css__square-spin`
   const styleContent = `
 @keyframes square-spin {

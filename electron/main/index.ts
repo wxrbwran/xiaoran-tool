@@ -30,7 +30,7 @@ const indexHtml = join(ROOT_PATH.dist, 'index.html')
 
 async function createWindow() {
   win = new BrowserWindow({
-    title: 'Main window',
+    title: '小然的工具箱',
     icon: join(ROOT_PATH.public, 'favicon.svg'),
     webPreferences: {
       preload,
@@ -43,7 +43,7 @@ async function createWindow() {
     win.loadFile(indexHtml)
   } else {
     win.loadURL(url)
-    // win.webContents.openDevTools()
+    win.webContents.openDevTools()
   }
 
   // Test actively push message to the Electron-Renderer
