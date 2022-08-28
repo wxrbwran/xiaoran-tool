@@ -1,6 +1,7 @@
 import { app, BrowserWindow, shell, ipcMain } from 'electron';
 import { release } from 'os';
 import { join } from 'path';
+import './sht';
 import './video';
 import './window';
 

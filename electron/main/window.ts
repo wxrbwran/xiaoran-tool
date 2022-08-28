@@ -1,9 +1,7 @@
 import { otherWindowConfig } from './config/windowsConfig';
 import { ROOT_PATH } from './index';
-const { ipcMain, dialog, BrowserWindow, app } = require('electron');
-const fs = require('fs');
-const path = require('path');
-const getDimensions = require('get-video-dimensions');
+import { ipcMain, dialog, BrowserWindow, app } from 'electron';
+import path from 'path';
 
 ipcMain.handle('window-open', async (e, arg) => {
   console.log('window-open arg', arg);
@@ -42,18 +40,3 @@ ipcMain.handle('window-open', async (e, arg) => {
   //   ChildWin.webContents.send('send-data-test', arg.sendData);
   // });
 });
-
-const videofile = ['mp4', 'avi', 'mkv', 'mov', 'wmv', 'ts', 'm2ts', 'mpg', 'rmvb', 'rm'];
-
-export async function checkVideo(dir: string) {
-  try {
-    const dimensions = await getDimensions(dir);
-    // console.log(dir);
-    console.log(dimensions);
-    // console.log(dimensions.height);
-    return dimensions;
-  } catch (err) {
-    console.log(err);
-  }
-  return false;
-}

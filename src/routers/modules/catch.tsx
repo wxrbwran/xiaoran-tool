@@ -2,27 +2,27 @@ import React from 'react';
 import lazyLoad from '@/routers/utils/lazyLoad';
 import { LayoutIndex } from '@/routers/constant';
 import { RouteObject } from '@/routers/interface';
-import VideoInfo from '@/views/video/info/index';
+import SHT from '@/views/catch/sht/index';
 
-// 视频 video 模块
-const videoRouter: Array<RouteObject> = [
+// 抓取 catch 模块
+const catchRouter: Array<RouteObject> = [
   {
     element: <LayoutIndex />,
     meta: {
-      title: '视频处理',
+      title: '抓取资源',
     },
     children: [
       {
-        path: '/video/info',
-        element: <VideoInfo />,
+        path: '/catch/sht',
+        element: <SHT />,
         meta: {
           requiresAuth: true,
-          title: '视频信息',
-          key: 'basicVideoForm',
+          title: 'sht',
+          key: 'catchSHT',
         },
       },
     ],
   },
 ];
 
-export default videoRouter;
+export default catchRouter;

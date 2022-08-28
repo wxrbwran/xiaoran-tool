@@ -38,7 +38,7 @@ const VideoInfo = () => {
 
   const checkVideos = async (params: TParams) => {
     try {
-      const response = await window.$video.check(params);
+      const response = await window.$ipcRenderer.invoke('video-check', params);
       setDataSource(response.list);
       window.$storage.set('video-check', params);
     } catch (e: any) {
@@ -47,10 +47,10 @@ const VideoInfo = () => {
   };
 
   useEffect(() => {
-    const params = window.$storage.get('video-check');
-    if (params) {
-      checkVideos(params);
-    }
+    // const params = window.$storage.get('video-check');
+    // if (params) {
+    //   checkVideos(params);
+    // }
   }, []);
 
   const actions = {
@@ -110,7 +110,7 @@ const VideoInfo = () => {
               let data = {
                 url: `/window/video?path=${record.filedir}`,
               };
-              window.$win.open(data);
+              window.$ipcRenderer.invoke('window-open', data);
             },
           };
         }}

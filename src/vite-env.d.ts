@@ -1,8 +1,7 @@
 /// <reference types="vite/client" />
 declare module 'get-video-dimensions';
 declare interface Window {
-  $sendSync: any;
-  $invoke: any;
+  $ipcRenderer: any;
   $win: any;
   $video: any;
   $storage: {

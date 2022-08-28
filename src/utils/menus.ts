@@ -22,6 +22,18 @@ const menus = [
     ]
   },
   {
+    "icon": "FileTextOutlined",
+    "title": "抓取资源",
+    "path": "/catch",
+    "children": [
+      {
+        "icon": "AppstoreOutlined",
+        "path": "/catch/sht",
+        "title": "SHT"
+      },
+    ]
+  },
+  {
     "icon": "TableOutlined",
     "title": "超级表格",
     "path": "/proTable",

@@ -1,61 +1,34 @@
-const { contextBridge, ipcRenderer } = require('electron');
-
 // Expose ipcRenderer to the client
-contextBridge.exposeInMainWorld('ipcRenderer', {
-  send: (channel: string, data: Record<string, any>) => {
-    // let validChannels = ['nameOfClientChannel'] // <-- Array of all ipcRenderer Channels used in the client
-    // if (validChannels.includes(channel)) {
-    ipcRenderer.send(channel, data);
-    // }
-  },
-  receive: (channel: string, func: Function) => {
-    // let validChannels = ['nameOfElectronChannel'] // <-- Array of all ipcMain Channels used in the electron
-    // if (validChannels.includes(channel)) {
-    // Deliberately strip event as it includes `sender`
-    ipcRenderer.on(channel, (event, ...args) => func(...args));
-    // }
-  },
-});
+import { ipcRenderer, contextBridge } from 'electron';
 
-contextBridge.exposeInMainWorld('$video', {
-  // we can also expose variables, not just functions
-  async check(params: Record<string, any>) {
-    // console.log('contextBridge', params);
-    const res = await ipcRenderer.invoke('video-check', params);
-    return res;
-  },
-});
+enum IpcRendererMethod {
+  Send = 'send',
+  Invoke = 'invoke',
+  On = 'on',
+}
 
-contextBridge.exposeInMainWorld('$win', {
-  // we can also expose variables, not just functions
-  async open(params: any) {
-    console.log('contextBridge open', params);
-    await ipcRenderer.invoke('window-open', params);
-  },
-});
-// /**
-//  * 发送异步消息（invoke/handle 模型）
-//  * @param channel
-//  * @param param
-//  * @returns {Promise}
-//  */
-// const invoke = (channel: string, param: any) => {
-//   const message = ipcRenderer.invoke(channel, param);
-//   return message;
-// };
-// window.$invoke = invoke;
-// /**
-//  * 发送同步消息（send/on 模型）
-//  * @param channel
-//  * @param param
-//  * @returns {Any}
-//  */
-// const sendSync = (channel: string, param: any) => {
-//   const message = ipcRenderer.sendSync(channel, param);
-//   return message;
-// };
+function callIpcRenderer(method: IpcRendererMethod, channel: string, ...args: any[]) {
+  // if (!channel.startsWith('APP_')) {
+  //   throw 'Error: IPC channel name not allowed';
+  // }
+  if (IpcRendererMethod.Send === method) {
+    return ipcRenderer.send(channel, ...args);
+  }
+  if (IpcRendererMethod.Invoke === method) {
+    return ipcRenderer.invoke(channel, ...args);
+  }
+  if (IpcRendererMethod.On === method) {
+    // ...
+  }
+}
 
-// window.$sendSync = sendSync;
+contextBridge.exposeInMainWorld('$ipcRenderer', {
+  invoke: (channel: string, ...args: any[]) =>
+    callIpcRenderer(IpcRendererMethod.Invoke, channel, ...args),
+  send: (channel: string, ...args: any[]) =>
+    callIpcRenderer(IpcRendererMethod.Send, channel, ...args),
+  on: (channel: string, ...args: any[]) => callIpcRenderer(IpcRendererMethod.On, channel, ...args),
+});
 
 export function domReady(condition: DocumentReadyState[] = ['complete', 'interactive']) {
   return new Promise((resolve) => {

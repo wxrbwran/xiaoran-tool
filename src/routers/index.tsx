@@ -18,7 +18,7 @@ console.log('routerArray', routerArray);
 export const rootRouter: RouteObject[] = [
   {
     path: '/',
-    element: <Navigate to='/video/info' />,
+    element: <Navigate to='/catch/sht' />,
   },
   {
     path: '/login',

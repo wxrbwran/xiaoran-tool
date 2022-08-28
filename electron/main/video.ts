@@ -1,27 +1,32 @@
-const { ipcMain } = require('electron');
-const fs = require('fs');
-const path = require('path');
-const util = require('util');
-const ffprobe = require('ffprobe');
-const ffprobeStatic = require('ffprobe-static');
+import util from 'util';
+import ffprobe from 'ffprobe';
+import ffprobeStatic from 'ffprobe-static';
+import { ipcMain } from 'electron';
+import fs from 'fs';
+import path from 'path';
+
+const cache: Record<string, any> = {};
+const videofile = ['mp4', 'avi', 'mkv', 'mov', 'wmv', 'ts', 'm2ts', 'mpg', 'rmvb', 'rm'];
 
 ipcMain.handle('video-check', async (e, params: any) => {
   let res: any = [];
   const { path } = params;
+  if (cache[path]) {
+    return cache[path];
+  }
   try {
     const list = await fileDisplay(path, res);
+    cache[path] = { path, list };
     return { path, list };
   } catch (e) {
     return { path, error: e };
   }
 });
 
-const videofile = ['mp4', 'avi', 'mkv', 'mov', 'wmv', 'ts', 'm2ts', 'mpg', 'rmvb', 'rm'];
-
 function getVideoDimensions(filename: string) {
-  console.log('filename', filename);
+  // console.log('filename', filename);
   return ffprobe(filename, { path: ffprobeStatic.path }).then((info: any) => {
-    console.log('ffprobe info', info);
+    // console.log('ffprobe info', info);
     return {
       width: info.streams[0].width,
       height: info.streams[0].height,
@@ -29,20 +34,7 @@ function getVideoDimensions(filename: string) {
   });
 }
 
-async function checkVideo(dir: string) {
-  try {
-    const dimensions = await getVideoDimensions(dir);
-    // console.log(dir);
-    console.log(dimensions);
-    // console.log(dimensions.height);
-    return dimensions;
-  } catch (err) {
-    console.log(err);
-  }
-  return false;
-}
-
-async function fileDisplay(filePath: string, res: string[]) {
+async function fileDisplay(filePath: string, res: any[]) {
   // console.log('fileDisplay', filePath, res);
   // 根据文件路径读取文件，返回文件列表
   const files = fs.readdirSync(filePath);
@@ -59,8 +51,8 @@ async function fileDisplay(filePath: string, res: string[]) {
       // console.log(ext);
       if (videofile.includes(ext)) {
         // console.log('shipin');
-        const dimensions = await checkVideo(filedir);
-        console.log(dimensions);
+        const dimensions = await getVideoDimensions(filedir);
+        // console.log(dimensions);
         res.push({ ...dimensions, filename, filedir });
       }
       //   var content = fs.readFileSync(filedir, "utf-8");
@@ -70,14 +62,13 @@ async function fileDisplay(filePath: string, res: string[]) {
       await fileDisplay(filedir, res); // 递归，如果是文件夹，就继续遍历该文件夹下面的文件
     }
   }
-  console.log(res);
+  // console.log(res);
   return res;
 }
-
-export default {
-  deleteVideo: (filePath: string) => {
-    console.log('deleteVideo', filePath);
-    fs.unlinkSync(filePath);
-    return { status: 'success' };
-  },
+const deleteVideo = (filePath: string) => {
+  console.log('deleteVideo', filePath);
+  fs.unlinkSync(filePath);
+  return { status: 'success' };
 };
+
+export default {};
