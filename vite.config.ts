@@ -3,11 +3,34 @@ import path from 'path';
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import electron, { onstart } from 'vite-plugin-electron';
+import optimizer from 'vite-plugin-optimizer';
 import Unocss from 'unocss/vite';
 import pkg from './package.json';
 
 rmSync(path.join(__dirname, 'dist'), { recursive: true, force: true }); // v14.14.0
-
+let getReplacer = () => {
+  let externalModels = [
+    'electron',
+    'os',
+    'fs',
+    'path',
+    'events',
+    'exec',
+    'child_process',
+    'crypto',
+    'http',
+    'buffer',
+    'url',
+  ];
+  let result = {};
+  for (let item of externalModels) {
+    result[item] = () => ({
+      find: new RegExp(`^${item}$`),
+      code: `const ${item} = require('${item}');export { ${item} as default }`,
+    });
+  }
+  return result;
+};
 // https://vitejs.dev/config/
 export default defineConfig({
   resolve: {
@@ -17,6 +40,7 @@ export default defineConfig({
     },
   },
   plugins: [
+    optimizer(getReplacer()),
     react(),
     Unocss({
       shortcuts: [

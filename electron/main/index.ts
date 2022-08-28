@@ -34,16 +34,13 @@ const indexHtml = join(ROOT_PATH.dist, 'index.html');
 async function createWindow() {
   win = new BrowserWindow({
     title: '小然的工具箱',
-    // right: 0,
-    // top: 0,
     width: 1280,
     height: 800,
     icon: join(ROOT_PATH.public, 'favicon.svg'),
     webPreferences: {
       webSecurity: false,
       preload,
-      // enableRemoteModule: true,
-      nodeIntegration: true,
+      nodeIntegration: false,
       contextIsolation: true,
     },
   });
