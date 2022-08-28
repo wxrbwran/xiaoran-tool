@@ -1,47 +1,67 @@
-import { Button, Input, Form, DatePicker, InputNumber, Card, Popconfirm } from 'antd';
+import {
+  Button,
+  Input,
+  Form,
+  DatePicker,
+  InputNumber,
+  Card,
+  Popconfirm,
+  Row,
+  Col,
+  message,
+} from 'antd';
 import config from './config';
 import React, { useState, useEffect } from 'react';
 import moment from 'moment';
+import { basename } from 'path';
 
 type TSHTConfig = {
   base: string;
-  total: number;
+  from: number;
+  to: number;
   date: number;
 };
 
-const SHT = () => {
+const ShtGet = () => {
   let shtConfig = window.$storage.get('sht-config');
   if (!shtConfig) {
     shtConfig = config;
     window.$storage.set('sht-config', config);
   }
   const [form] = Form.useForm();
-  const [dir, setDir] = useState('');
 
   const [curConfig, setCurConfig] = useState<TSHTConfig>(shtConfig);
-  const handleChangeDir = (e: any) => {
-    if (e.target.files[0]) {
-      const path = e.target.files[0].path;
-      const filename = e.target.files[0].name;
-      setDir(path.split(filename)[0]);
-    }
-  };
 
   const onValuesChange = (_changed: Partial<TSHTConfig>, values: TSHTConfig) => {
+    // if (values.from <= values.to) {
     setCurConfig(values);
+    // } else {
+    //   message.error('开始页必须小于等于目标页！');
+    // }
   };
   const handleCatchSHT = async () => {
+    if (curConfig.from <= curConfig.to) {
+      window.$storage.set('sht-config', curConfig);
+      const res = await window.$ipcRenderer.invoke('sht-catch', curConfig);
+      console.log('handleCatchSHT res', res);
+    } else {
+      message.error('开始页必须小于等于目标页！');
+    }
     // console.log('handleCatchSHT', curConfig);
-    window.$storage.set('sht-config', curConfig);
-    const res = await window.$ipcRenderer.invoke('catch-sht', curConfig);
-    console.log('handleCatchSHT res', res);
   };
-
-  const handleBtnClick = async () => {};
+  const handleFormToday = () => {
+    // console.log('handleFormToday');
+    // console.log(form.getFieldsValue());
+    form.setFieldsValue({
+      date: moment(new Date()),
+    });
+    setCurConfig(form.getFieldsValue());
+    console.log(form.getFieldsValue());
+  };
 
   return (
     <div>
-      <Card title='抓取sht'>
+      <Card>
         <Form
           form={form}
           labelCol={{ span: 4 }}
@@ -60,12 +80,22 @@ const SHT = () => {
           >
             <Input />
           </Form.Item>
-          <Form.Item
-            name='date'
-            label='上次抓取日期'
-          >
-            <DatePicker />
+          <Form.Item label='上次抓取日期'>
+            <Form.Item
+              name='date'
+              noStyle
+            >
+              <DatePicker />
+            </Form.Item>
+            <Button
+              type='ghost'
+              className='ml-20px'
+              onClick={handleFormToday}
+            >
+              设置为今天
+            </Button>
           </Form.Item>
+
           <Form.Item
             rules={[
               {
@@ -73,7 +103,7 @@ const SHT = () => {
               },
             ]}
             name='from'
-            label='从第几页开始'
+            label='开始页'
           >
             <InputNumber />
           </Form.Item>
@@ -84,12 +114,20 @@ const SHT = () => {
               },
             ]}
             name='to'
-            label='到第几页'
+            label='目标页'
           >
             <InputNumber />
           </Form.Item>
         </Form>
-        <div className='flex justify-center'>
+        <div className='flex justify-center space-x-10px'>
+          <Button
+            type='primary'
+            onClick={() => {
+              window.$storage.set('sht-config', curConfig);
+            }}
+          >
+            保存设置
+          </Button>
           <Popconfirm
             title='是否开始抓取，请确认配置！'
             onConfirm={form.submit}
@@ -103,39 +141,18 @@ const SHT = () => {
               开始抓取
             </Button>
           </Popconfirm>
-        </div>
-      </Card>
-      <Card className='my-20px'>
-        <div className='flex space-x-10px justify-center '>
-          <Button></Button>
-          <div className='relative'>
-            <Button className='cursor-pointer'>选择</Button>
-            <Input
-              onChange={handleChangeDir}
-              className='input-file'
-              type='file'
-              multiple
-              // @ts-ignore
-              directory=''
-              webkitdirectory=''
-            />
-          </div>
           <Button
-            type='primary'
-            onClick={handleBtnClick}
+            danger
+            onClick={async () => {
+              await window.$ipcRenderer.invoke('catch-sht:stop');
+            }}
           >
-            确认
+            中断抓取
           </Button>
-        </div>
-        <div
-          className='inline h-32px leading-loose line-clamp-1 text-ellipsis'
-          title={`${dir}`}
-        >
-          {`选择的文件夹：${dir}`}
         </div>
       </Card>
     </div>
   );
 };
 
-export default SHT;
+export default ShtGet;

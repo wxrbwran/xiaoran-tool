@@ -1,6 +1,6 @@
 const config = {
   base: 'https://qwrewr.net/',
-  date: 998496000000,
+  date: '2022.08.23',
   from: 1,
   to: 27,
 };
